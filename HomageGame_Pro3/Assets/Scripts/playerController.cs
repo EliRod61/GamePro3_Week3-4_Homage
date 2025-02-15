@@ -7,20 +7,26 @@ public class playerController : MonoBehaviour
 
     public float speed;
     public float jumpForce;
+    public Transform orientation;
 
-    //Money
+    [Header("Ground Check")]
+    public float playerHeight;
+    public LayerMask Ground;
+    bool grounded;
+    public float groundDrag;
+
+    [Header("Money")]
     private float playerWallet;
     private float passiveMoney;
     private bool passiveIncome = false;
-
-    public Transform orientation;
-    Rigidbody rb;
     
     float horizontalInput;
     float verticalInput;
     Vector3 moveDirection;
 
-    [Header("Blob Shadow")]
+    Rigidbody rb;
+
+    [Header("Player Shadow")]
     public GameObject shadow;
     public RaycastHit hit;
     public float offset;
@@ -42,6 +48,14 @@ public class playerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //ground check       0.5f is half the players height and 0.2f is extra length
+        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 1f + 0.2f, Ground);
+
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+
+        speedControl();
+
         if (passiveIncome == true)
         {
             //when passiveincome is set true(player gets upgrade for getting money without clicking)
@@ -50,10 +64,21 @@ public class playerController : MonoBehaviour
             playerWallet += passiveMoney;
         }
 
+        if (grounded)
+        {
+            rb.linearDamping = groundDrag;
+        }
+        else
+        {
+            rb.linearDamping = 0;
+        }
+    }
+
+    private void FixedUpdate()
+    {
         menuController();
         movePlayer();
         playerShadow();
-
     }
 
     private void menuController()
@@ -72,10 +97,10 @@ public class playerController : MonoBehaviour
 
     private void movePlayer()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
-
+        //caculate movement direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+
+        rb.AddForce(moveDirection.normalized * speed * 10f, ForceMode.Force);
 
         //Jump
         if (Input.GetKeyDown(KeyCode.Space)) 
@@ -83,6 +108,18 @@ public class playerController : MonoBehaviour
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
 
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse); 
+        }
+    }
+
+    private void speedControl()
+    {
+        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
+        //limit velocity
+        if (flatVel.magnitude > speed)
+        {
+            Vector3 limitedVel = flatVel.normalized * speed;
+            rb.linearVelocity = new Vector3(limitedVel.x, rb.linearVelocity.y, limitedVel.z);
         }
     }
 
