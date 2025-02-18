@@ -1,13 +1,21 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class playerController : MonoBehaviour
 {
-    //Cookie Clicker/Clicker Games
+    //UI for dots collected
+    //Better player movement(sprint, two cameras)
+    //Teleporters
+    //Power Ups 
+    //Enemy Ai(chasing player, not getting stuck, follow path)
 
+
+    [Header("Player")]
     public float speed;
     public float jumpForce;
-    public Transform orientation;
+    public int lives = 3;
+    int dotsCollected;
 
     [Header("Ground Check")]
     public float playerHeight;
@@ -15,33 +23,26 @@ public class playerController : MonoBehaviour
     bool grounded;
     public float groundDrag;
 
-    [Header("Money")]
-    private float playerWallet;
-    private float passiveMoney;
-    private bool passiveIncome = false;
-    
+    [Header("Keybinds")]
+    public KeyCode menuKey = KeyCode.I;
+
+    public Transform orientation;
+    Vector3 spawnPoint;
+    Rigidbody rb;
+
     float horizontalInput;
     float verticalInput;
     Vector3 moveDirection;
 
-    Rigidbody rb;
-
-    [Header("Player Shadow")]
-    public GameObject shadow;
-    public RaycastHit hit;
-    public float offset;
-
-    [Header("Keybinds")]
-    public KeyCode menuKey = KeyCode.I;
-
-    public GameObject buyMenu;
-
+    int buildIndex;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        spawnPoint = transform.position;
+        dotsCollected = 0;
 
+        rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
     }
 
@@ -56,14 +57,6 @@ public class playerController : MonoBehaviour
 
         speedControl();
 
-        if (passiveIncome == true)
-        {
-            //when passiveincome is set true(player gets upgrade for getting money without clicking)
-            //the passiveMoney (which will get bigger with more upgrades)
-            //will be added into the the players wallet
-            playerWallet += passiveMoney;
-        }
-
         if (grounded)
         {
             rb.linearDamping = groundDrag;
@@ -72,27 +65,16 @@ public class playerController : MonoBehaviour
         {
             rb.linearDamping = 0;
         }
+
+        if (dotsCollected >= 150)
+        {
+            SceneManager.LoadScene(buildIndex + 1);
+        }
     }
 
     private void FixedUpdate()
     {
-        menuController();
         movePlayer();
-        playerShadow();
-    }
-
-    private void menuController()
-    {
-        if (Input.GetKeyDown(menuKey))
-        {
-            //Open Menu
-            buyMenu.SetActive(true);
-        }
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            //Close Menu
-            buyMenu.SetActive(false);
-        }
     }
 
     private void movePlayer()
@@ -123,14 +105,30 @@ public class playerController : MonoBehaviour
         }
     }
 
-    private void playerShadow()
+    private void OnTriggerEnter(Collider collider)
     {
-        Ray downRay = new Ray(new Vector3(this.transform.position.x, this.transform.position.y - offset, this.transform.position.z), -Vector3.up);
+        //give player an extra jump when colliding with a powerup
+        if (collider.gameObject.tag == "Dot")
+        {
+            Destroy(collider.gameObject);
+            dotsCollected += 1;
+            Debug.Log(dotsCollected);
+        }
+        //put player in spawn if they collide with enemy and they have lives left
+        //restart the game if they dont have any lives
+        if (collider.gameObject.tag == "Enemy")
+        {
+            lives--;
 
-        //gets the hit from the raycast and converts it unto a vector3
-        Vector3 hitPosition = hit.point;
-        //transform the shadow to the location
-        shadow.transform.position = hitPosition;
+            if (lives <= 0)
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
+            else
+            {
+                transform.position = spawnPoint;
+            }
+        }
     }
 }
 
