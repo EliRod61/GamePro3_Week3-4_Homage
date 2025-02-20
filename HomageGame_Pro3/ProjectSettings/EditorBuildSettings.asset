@@ -4,4 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Level_01.unity
+    guid: dbfe71574679e0442a39f4183ebfcf96
+  - enabled: 1
+    path: Assets/Scenes/EndGame.unity
+    guid: f02e4c7c2404924438f457ecf2c22f26
+  m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

@@ -5,6 +5,7 @@ public class CameraController : MonoBehaviour
     public float sensX;
     public float sensY;
 
+    public Transform bulletPoint;
     public Transform orientation;
     public GameObject buyMenu;
 
@@ -33,6 +34,7 @@ public class CameraController : MonoBehaviour
         // rotate cam and orientation
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+        bulletPoint.rotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
 
     private void menuController()

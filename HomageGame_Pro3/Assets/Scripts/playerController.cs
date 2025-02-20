@@ -114,9 +114,12 @@ public class playerController : MonoBehaviour
             dotsCollected += 1;
             Debug.Log(dotsCollected);
         }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
         //put player in spawn if they collide with enemy and they have lives left
         //restart the game if they dont have any lives
-        if (collider.gameObject.tag == "Enemy")
+        if (collision.gameObject.tag == "Enemy")
         {
             lives--;
 
